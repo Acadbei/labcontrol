@@ -1,0 +1,33 @@
+{
+  "users": [
+    { "id": "fixture-user-1", "loginId": "fixture-login-1", "name": "Sinov foydalanuvchi 1", "email": "person1@example.test", "role": "ADMIN", "position": "Sinov", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-user-2", "loginId": "fixture-login-2", "name": "Sinov foydalanuvchi 2", "email": "person2@example.test", "role": "SUPER_ADMIN", "position": "Sinov", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-user-3", "loginId": "fixture-login-3", "name": "Sinov foydalanuvchi 3", "email": "person3@example.test", "role": "USER", "position": "Sinov", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-user-4", "loginId": "fixture-login-4", "name": "Sinov foydalanuvchi 4", "email": "person4@example.test", "role": "USER", "position": "Sinov", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-user-5", "loginId": "fixture-login-5", "name": "Sinov foydalanuvchi 5", "email": "person5@example.test", "role": "USER", "position": "Sinov", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-user-6", "loginId": "fixture-login-6", "name": "Sinov foydalanuvchi 6", "email": "person6@example.test", "role": "USER", "position": "Sinov", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-user-7", "loginId": "fixture-login-7", "name": "Sinov foydalanuvchi 7", "email": "", "role": "USER", "position": "Sinov", "source": "synthetic fixture", "verified": false }
+  ],
+  "projects": [
+    { "id": "fixture-project-3", "name": "Sinov loyiha A", "code": "FX-A", "description": "Fixture-only project", "status": "Active", "priority": "Low", "managerId": "fixture-user-3", "teamIds": ["fixture-user-3"], "documentsCount": 1, "tasksCount": 1, "progressPercent": 0, "technicalParameters": [], "overview": "", "decisions": [], "tags": [], "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-project-4", "name": "Sinov loyiha B", "code": "FX-B", "description": "Fixture-only project", "status": "Planning", "priority": "Low", "managerId": "fixture-user-4", "teamIds": ["fixture-user-4"], "documentsCount": 0, "tasksCount": 1, "progressPercent": 0, "technicalParameters": [], "overview": "", "decisions": [], "tags": [], "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z", "source": "synthetic fixture", "verified": false }
+  ],
+  "documents": [
+    { "id": "fixture-doc-3", "title": "Sinov manbasi", "originalName": "fixture.txt", "fileType": "txt", "fileSize": 58, "projectId": "fixture-project-3", "uploadedById": "fixture-user-3", "uploadedByName": "Sinov foydalanuvchi 3", "uploadedAt": "2026-01-01T00:00:00.000Z", "version": 1, "summary": "Fixture-only source.", "tags": [], "technicalParameters": [], "isIndexed": true, "chunksCount": 1, "verified": true, "provenance": "synthetic fixture reviewed", "verifiedById": "fixture-user-1", "verifiedByName": "Sinov foydalanuvchi 1", "verifiedAt": "2026-01-01T00:00:00.000Z", "source": "synthetic fixture", "isDemo": false },
+    { "id": "fixture-doc-4", "title": "Sinov manbasi B", "originalName": "fixture-b.txt", "fileType": "txt", "fileSize": 20, "projectId": "fixture-project-4", "uploadedById": "fixture-user-4", "uploadedByName": "Sinov foydalanuvchi 4", "uploadedAt": "2026-01-01T00:00:00.000Z", "version": 1, "summary": "Fixture-only source.", "tags": [], "technicalParameters": [], "isIndexed": true, "chunksCount": 1, "verified": true, "provenance": "synthetic fixture reviewed", "verifiedById": "fixture-user-1", "verifiedByName": "Sinov foydalanuvchi 1", "verifiedAt": "2026-01-01T00:00:00.000Z", "source": "synthetic fixture", "isDemo": false }
+  ],
+  "chunks": [
+    { "id": "fixture-chunk-3", "docId": "fixture-doc-3", "chunkIndex": 0, "text": "alfa calibration reading equals 42 units.", "pageOrSlide": 1 },
+    { "id": "fixture-chunk-4", "docId": "fixture-doc-4", "chunkIndex": 0, "text": "bravo calibration reading equals 17 units.", "pageOrSlide": 1 }
+  ],
+  "tasks": [
+    { "id": "fixture-task-3", "title": "Sinov vazifa", "description": "Fixture-only task", "projectId": "fixture-project-3", "projectName": "Sinov loyiha A", "assigneeId": "fixture-user-3", "assigneeName": "Sinov foydalanuvchi 3", "creatorId": "fixture-user-3", "creatorName": "Sinov foydalanuvchi 3", "priority": "Low", "deadline": "2026-12-01", "status": "TODO", "comments": [], "tags": [], "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z", "source": "synthetic fixture", "verified": false },
+    { "id": "fixture-task-orphan", "title": "Bog‘lanmagan vazifa", "description": "Must be rejected, never mapped by label", "projectId": "missing-project", "projectName": "Noma’lum loyiha", "assigneeId": "fixture-user-3", "assigneeName": "Sinov foydalanuvchi 3", "creatorId": "fixture-user-3", "creatorName": "Sinov foydalanuvchi 3", "priority": "Low", "deadline": "2026-12-01", "status": "TODO", "comments": [], "tags": [], "createdAt": "2026-01-01T00:00:00.000Z", "updatedAt": "2026-01-01T00:00:00.000Z", "source": "synthetic fixture", "verified": false }
+  ],
+  "knowledge": [],
+  "auditLogs": [],
+  "chatMessages": [],
+  "teamMessages": [],
+  "settings": { "aiProvider": "local_extractive" },
+  "currentUserId": "fixture-user-3"
+}

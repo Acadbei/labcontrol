@@ -1,0 +1,43 @@
+{
+  "name": "labcontrol",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p 3000",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test:system": "node tests/system-check.mjs",
+    "test:documents": "node tests/office-archive-check.mjs",
+    "test:migration": "node tests/migration-check.mjs",
+    "test:api": "node tests/api-integration.mjs",
+    "migrate:postgres": "node scripts/migrate-postgres.mjs",
+    "import:postgres": "node scripts/import-json-to-postgres.mjs"
+  },
+  "dependencies": {
+    "adm-zip": "0.6.1",
+    "argon2": "^0.45.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.453.0",
+    "next": "16.3.8",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.23.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^20.17.0",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.3.8",
+    "postcss": "^8.4.47",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.6.3"
+  }
+}

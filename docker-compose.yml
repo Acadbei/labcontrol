@@ -1,0 +1,70 @@
+# This is a single-host preview scaffold, not a production deployment.
+# The app still stores runtime data in JSON and does not consume DATABASE_URL.
+version: '3.8'
+
+services:
+  # Local preview app; keep the published port on loopback.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: labcontrol-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NODE_ENV=production
+      - LABCONTROL_DEMO_MODE=false
+      - LABCONTROL_DATABASE_FILE=/app/data/production.database.json
+      - LABCONTROL_SESSION_FILE=/app/data/sessions.json
+      - LABCONTROL_UPLOADS_DIR=/app/data/uploads
+      - LABCONTROL_PUBLIC_ORIGIN=${LABCONTROL_PUBLIC_ORIGIN:?Set LABCONTROL_PUBLIC_ORIGIN in a private environment file}
+      - LABCONTROL_ALLOWED_ORIGINS=${LABCONTROL_ALLOWED_ORIGINS:-}
+      - LABCONTROL_PASSWORD_HASHES_JSON=${LABCONTROL_PASSWORD_HASHES_JSON:?Set provisioned Argon2id hashes in a private environment file}
+      - OLLAMA_URL=${LABCONTROL_OLLAMA_URL_DOCKER:-}
+      - OLLAMA_ALLOWED_HOSTS=${OLLAMA_ALLOWED_HOSTS:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - LABCONTROL_OPENROUTER_MODEL=${LABCONTROL_OPENROUTER_MODEL:-openrouter/free}
+    volumes:
+      - lab_data:/app/data
+    networks:
+      - lab_network
+
+  # Migration target only. The running app is not connected to this service.
+  postgres:
+    profiles: ["migration"]
+    image: postgres:16-alpine
+    container_name: labcontrol-postgres-migration
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lab_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      POSTGRES_DB: lab_control
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - lab_network
+
+  # Optional local service-health test target. Generative chat remains disabled.
+  ollama:
+    profiles: ["ollama"]
+    image: ollama/ollama:latest
+    container_name: labcontrol-ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - lab_network
+
+networks:
+  lab_network:
+    driver: bridge
+
+volumes:
+  lab_data:
+  pg_data:
+  ollama_models:

@@ -1,0 +1,617 @@
+# LABCONTROL — AXBOROT OQIMI VA FOYDALANUVCHI HUQUQLARI
+
+Tizimda har bir foydalanuvchi faqat o‘zining lavozimi, roli va loyiha bo‘yicha vakolatiga mos ma’lumotlarni ko‘rishi kerak.
+
+Asosiy qoida:
+
+**Boshliq → barcha ma’lumotlar**
+
+**Umumiy administrator → tizim va texnik boshqaruv + loyiha ma’lumotlari**
+
+**Oddiy foydalanuvchi → faqat o‘ziga ruxsat berilgan loyiha, hujjat va vazifalar**
+
+---
+
+# 1. PODPOLKOVNIK BOLIYEV UMAR — LABORATORIYA BOSHLIG‘I
+
+Role:
+
+`ADMIN / HEAD`
+
+Boshliq tizimdagi barcha ma’lumotlarni ko‘rish huquqiga ega.
+
+### Boshliqqa yetkaziladigan ma’lumotlar:
+
+#### Umumiy holat
+
+- barcha loyihalar
+- barcha loyihalarning holati
+- loyihalar bo‘yicha bajarilish foizi
+- kechikayotgan loyihalar
+- muammoli loyihalar
+- barcha xodimlarning faoliyati
+- barcha vazifalar
+- bajarilgan va bajarilmagan vazifalar
+- deadline'lar
+- laboratoriya umumiy statistikasi
+
+#### Loyiha ma’lumotlari
+
+Har bir loyiha bo‘yicha:
+
+- loyiha nomi
+- loyiha maqsadi
+- mas’ul xodimlar
+- bajarilish holati
+- texnik topshiriq
+- texnik hujjatlar
+- chizmalar
+- 3D loyihalar haqidagi ma’lumotlar
+- dasturiy ta’minot
+- hisobotlar
+- prezentatsiyalar
+- muhim qarorlar
+- muammolar
+- risklar
+- loyiha tarixi
+
+#### Xodimlar
+
+Boshliq:
+
+- barcha xodimlarni ko‘radi
+- xodimlarning vazifalarini ko‘radi
+- vazifa bajarilish holatini ko‘radi
+- loyiha bo‘yicha yuklamani ko‘radi
+- kim nima ustida ishlayotganini ko‘radi
+
+#### AI hisobotlari
+
+Boshliq AI orqali:
+
+> "Laboratoriyaning bugungi holatini ko‘rsat."
+
+> "Qaysi loyihalar kechikmoqda?"
+
+> "Kimning vazifalari ko‘p?"
+
+> "Oxirgi haftada qanday muhim qarorlar qabul qilindi?"
+
+> "Menga barcha loyihalar bo‘yicha qisqa hisobot tayyorla."
+
+kabi buyruqlar bera oladi.
+
+### Boshliq uchun avtomatik bildirishnomalar
+
+Boshliqqa quyidagilar avtomatik yetkazilsin:
+
+- muhim loyiha kechikishi
+- Critical priority vazifa
+- deadline yaqinlashishi
+- loyiha bo‘yicha jiddiy muammo
+- muhim texnik qaror
+- yangi loyiha
+- loyiha yakunlanishi
+- muhim hujjat yuklanishi
+- xodim tomonidan yuborilgan muhim hisobot
+- tizimdagi jiddiy xatolik
+
+---
+
+# 2. ABDUMANNOPОV ASADBEK — BACKEND DASTURCHI / UMUMIY ADMINISTRATOR
+
+Role:
+
+`SUPER_ADMIN / BACKEND_DEVELOPER`
+
+Asadbek texnik administrator sifatida tizimning texnik qismini boshqaradi.
+
+### Asadbek ko‘radi:
+
+- barcha loyihalar
+- barcha texnik hujjatlar
+- dasturlashga oid ma’lumotlar
+- backend
+- API
+- database
+- AI konfiguratsiyasi
+- RAG
+- knowledge base
+- tizim loglari
+- texnik xatoliklar
+- foydalanuvchilar
+- texnik activity log
+
+### Asadbekka yetkaziladigan avtomatik ma’lumotlar:
+
+- server xatoliklari
+- API xatolari
+- AI xatolari
+- database xatolari
+- document processing xatolari
+- RAG indexing xatolari
+- backup xatolari
+- tizimning texnik holati
+
+### Lekin:
+
+Asadbekning `ADMIN` huquqi **Boliyev Umarning rahbarlik vakolatini almashtirmaydi**.
+
+U:
+
+- Boshliq rolini o‘zgartira olmaydi
+- Boshliqning shaxsiy ma’lumotlarini ko‘rmasligi kerak
+- rahbariyatga tegishli maxfiy ma’lumotlarga avtomatik kira olmaydi
+- boshqa xodimlarning personal memory'sini ko‘ra olmaydi
+
+---
+
+# 3. ISMOILOVA FARANGIZ — FRONTEND DASTURCHI
+
+Role:
+
+`USER / FRONTEND_DEVELOPER`
+
+Farangizga faqat ish faoliyatiga tegishli ma’lumotlar yetkaziladi.
+
+### Ko‘radi:
+
+- o‘ziga biriktirilgan loyihalar
+- frontend bilan bog‘liq loyihalar
+- o‘z vazifalari
+- unga biriktirilgan tasklar
+- loyiha hujjatlari
+- frontend texnik hujjatlari
+- umumiy knowledge base'ning ruxsat berilgan qismi
+- o‘z faoliyati
+- AI Assistant
+
+### Ko‘rmaydi:
+
+- boshqa xodimlarning shaxsiy ma’lumotlari
+- personal memory
+- admin konfiguratsiyasi
+- database credentials
+- server credentials
+- boshqa xodimlarning maxfiy loyihalari
+- rahbariyatning maxfiy ma’lumotlari
+
+### Farangizga bildirishnomalar:
+
+- yangi task
+- task o‘zgarishi
+- deadline
+- review talab qilinishi
+- loyiha bo‘yicha yangi hujjat
+- unga tegishli comment
+- loyiha bo‘yicha muhim yangilik
+
+---
+
+# 4. YUSUPOV ILDAR — UMUMIY DASTURCHI
+
+Role:
+
+`USER / DEVELOPER`
+
+### Ko‘radi:
+
+- o‘ziga biriktirilgan loyihalar
+- dasturiy loyihalar
+- o‘z tasklari
+- tegishli texnik hujjatlar
+- kodga oid hujjatlar
+- umumiy loyiha knowledge base
+- AI Assistant
+
+### Bildirishnomalar:
+
+- yangi task
+- task status o‘zgarishi
+- deadline
+- code/project update
+- hujjat yangilanishi
+- review request
+
+---
+
+# 5. SAYDAHMEDOV QURVONALI — KONSTRUKTOR / 3D LOYIHALOVCHI
+
+Role:
+
+`USER / CONSTRUCTOR / 3D_DESIGNER`
+
+### Ko‘radi:
+
+- o‘ziga biriktirilgan mexanik loyihalar
+- konstruktorlik loyihalari
+- 3D loyihalar
+- texnik chizmalar
+- texnik topshiriqlar
+- o‘z tasklari
+- loyihaga tegishli hujjatlar
+- CAD metadata
+- AI Assistant
+
+### Muhandislik ma’lumotlari:
+
+Unga quyidagilar yetkazilishi mumkin:
+
+- konstruktorlik o‘zgarishlari
+- yangi texnik topshiriq
+- yangi chizma
+- revision
+- 3D model yangilanishi
+- o‘lcham va parametrlar
+- materiallar
+- ishlab chiqarish talablari
+- test natijalari
+
+### Bildirishnomalar:
+
+- yangi konstruktorlik taski
+- chizma revision
+- review
+- deadline
+- loyiha o‘zgarishi
+- texnik izoh
+
+---
+
+# 6. TURDIYEV MUHAMMADALI — KONSTRUKTOR / 3D LOYIHALOVCHI
+
+Role:
+
+`USER / CONSTRUCTOR / 3D_DESIGNER`
+
+Huquqlari Qurvonali bilan bir xil.
+
+Ko‘radi:
+
+- biriktirilgan loyihalar
+- konstruktorlik ma’lumotlari
+- 3D loyihalar
+- chizmalar
+- texnik hujjatlar
+- tasklar
+- AI Assistant
+
+Boshqa loyihalarga faqat ruxsat berilgan bo‘lsa kira oladi.
+
+---
+
+# 7. ABDULLAYEVA SHAXLO — KONSTRUKTOR / 3D LOYIHALOVCHI
+
+Role:
+
+`USER / CONSTRUCTOR / 3D_DESIGNER`
+
+Huquqlari:
+
+- biriktirilgan konstruktorlik loyihalari
+- 3D loyihalar
+- chizmalar
+- texnik hujjatlar
+- tasklar
+- loyiha knowledge base
+- AI Assistant
+
+Faqat ruxsat berilgan ma’lumotlarni ko‘radi.
+
+---
+
+# 8. MA’LUMOTLARNI YETKAZISH QOIDASI
+
+Tizim ma’lumotlarni quyidagi darajalarga ajratsin:
+
+### LEVEL 1 — PUBLIC TEAM
+
+Butun jamoaga ochiq:
+
+- umumiy laboratoriya yangiliklari
+- umumiy loyihalar ro‘yxati
+- umumiy e’lonlar
+- umumiy texnik standartlar
+- jamoaga tegishli knowledge
+
+---
+
+### LEVEL 2 — PROJECT
+
+Faqat loyiha jamoasiga:
+
+- loyiha hujjatlari
+- texnik topshiriq
+- tasklar
+- chizmalar
+- kod
+- loyiha qarorlari
+- meeting notes
+- test natijalari
+
+---
+
+### LEVEL 3 — PERSONAL
+
+Faqat foydalanuvchining o‘zi:
+
+- personal notes
+- personal AI memory
+- personal draft
+- shaxsiy tasklar
+- shaxsiy preferences
+
+---
+
+### LEVEL 4 — MANAGEMENT
+
+Faqat Boshliq va tegishli yuqori darajadagi administrator:
+
+- umumiy laboratoriya statistikasi
+- barcha xodimlar bo‘yicha hisobot
+- umumiy performance
+- barcha loyihalar holati
+- boshqaruv qarorlari
+- maxsus hisobotlar
+
+---
+
+### LEVEL 5 — SYSTEM ADMIN
+
+Faqat texnik administrator:
+
+- server
+- API
+- database
+- AI konfiguratsiyasi
+- system logs
+- technical diagnostics
+
+Bu darajadagi ma’lumotlar oddiy foydalanuvchilarga ko‘rsatilmasin.
+
+---
+
+# 9. AI MA’LUMOT BERISH QOIDASI
+
+AI foydalanuvchi nomidan tizimdagi barcha ma’lumotlarga kira olmasin.
+
+Avval foydalanuvchining permission'ini tekshirsin.
+
+Masalan:
+
+Farangiz:
+
+> "Barcha laboratoriya loyihalarini ko‘rsat."
+
+AI:
+
+> "Sizga ruxsat berilgan loyihalar: 4 ta."
+
+Boshliq:
+
+> "Barcha laboratoriya loyihalarini ko‘rsat."
+
+AI:
+
+> "Laboratoriyada jami 12 ta loyiha mavjud..."
+
+---
+
+# 10. INFORMATION FLOW
+
+Tizim quyidagi oqim asosida ishlasin:
+
+```text
+                    BOLIYEV UMAR
+                    LABORATORIYA
+                       BOSHLIG‘I
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ▼                ▼                ▼
+      PROJECTS          REPORTS          TEAM STATUS
+          │
+          ├───────────────┐
+          │               │
+          ▼               ▼
+     DASTURCHILAR     MUHANDISLAR
+          │               │
+     ┌────┴────┐      ┌───┴────────────┐
+     │         │      │       │        │
+  Asadbek  Farangiz  Qurvonali Muhammadali Shaxlo
+     │         │      │       │        │
+     └─────────┴──────┴───────┴────────┘
+                    │
+                    ▼
+               LABCONTROL AI
+                    │
+                    ▼
+            KNOWLEDGE BASE
+                    │
+         ┌──────────┼──────────┐
+         ▼          ▼          ▼
+       DOCX        PDF        PPTX
+```
+
+---
+
+# 11. TASK FLOW
+
+Tasklar yuqoridan pastga va loyiha doirasida boshqarilsin.
+
+Masalan:
+
+**Boshliq:**
+
+> "Qurvonali va Muhammadaliga yangi konstruktorlik vazifasi berilsin."
+
+Tizim:
+
+```text
+Boliyev Umar
+      ↓
+Create Task
+      ↓
+Qurvonali + Muhammadali
+      ↓
+Notification
+```
+
+Boshliq task holatini ko‘radi:
+
+```text
+TODO → IN PROGRESS → REVIEW → DONE
+```
+
+---
+
+# 12. REPORT FLOW
+
+Oddiy foydalanuvchi:
+
+```text
+User
+ ↓
+Task
+ ↓
+Progress
+ ↓
+Project
+ ↓
+Project Manager / Admin
+ ↓
+Head
+```
+
+Boshliq esa barcha loyihalardan umumiy hisobot oladi.
+
+Masalan:
+
+> "Bugungi laboratoriya hisoboti"
+
+AI quyidagilarni yig‘adi:
+
+- bajarilgan ishlar
+- davom etayotgan ishlar
+- kechikishlar
+- muammolar
+- muhim texnik o‘zgarishlar
+- yangi hujjatlar
+- keyingi vazifalar
+
+va Boshliqqa yagona hisobot beradi.
+
+---
+
+# 13. HUJJAT YUKLANGANDA
+
+Foydalanuvchi DOCX/PDF/PPTX yuklaganda tizim:
+
+1. Faylni kim yuklaganini aniqlaydi.
+2. Qaysi loyiha uchun ekanini aniqlaydi.
+3. Foydalanuvchining permission'ini tekshiradi.
+4. Hujjatni tahlil qiladi.
+5. Metadata chiqaradi.
+6. Knowledge Base'ga indekslaydi.
+7. Faqat ruxsat berilgan foydalanuvchilarga ochadi.
+8. Boshliq uchun kerakli umumiy ma’lumotlarni umumlashtirish imkonini beradi.
+
+---
+
+# 14. BOSHLIQQA AVTOMATIK SUMMARY
+
+Boshliq har bir hujjatni alohida o‘qib chiqishi shart emas.
+
+AI muhim hujjatlarni avtomatik qisqartirib:
+
+**"Boshliq uchun qisqa mazmun"**
+
+yaratsin.
+
+Masalan:
+
+```text
+📄 Technical Specification.pdf
+
+Loyiha: Smart Water Meter
+Muallif: Abdumannopov Asadbek
+Loyiha: Smart Water Meter
+
+Asosiy o‘zgarishlar:
+• o‘lchash kanallari: 2 ta
+• yangi sensor qo‘shilgan
+• 4G modul o‘zgartirilgan
+• test muddati: 15-oktabr
+
+⚠️ E'tibor:
+Loyihaning deadline'iga 5 kun qoldi.
+```
+
+---
+
+# 15. MAXFIYLIK
+
+Hech bir oddiy foydalanuvchi permission'siz boshqa xodimning:
+
+- personal memory
+- private notes
+- private conversations
+- private tasks
+- private files
+
+ma’lumotlarini ko‘ra olmasin.
+
+AI ham permission'ni chetlab o‘tmasin.
+
+**AI administrator huquqiga ega emas. AI faqat joriy foydalanuvchining huquqlari doirasida ishlaydi.**
+
+Bu qoidani backend darajasida ham, frontend darajasida ham tekshiring.
+
+Frontenddagi yashirishning o‘zi yetarli emas.
+
+---
+
+# 16. NOTIFICATION SYSTEM
+
+Notification priority:
+
+### CRITICAL
+
+Boshliq + tegishli mas’ullar.
+
+### HIGH
+
+Loyiha jamoasi + mas’ul.
+
+### NORMAL
+
+Tegishli foydalanuvchi.
+
+### LOW
+
+Faqat tizim ichidagi notification.
+
+Notification kanallari:
+
+- in-app
+- email — keyinchalik
+- Telegram — keyinchalik
+- mobile push — keyinchalik
+
+---
+
+# 17. ASOSIY TAMOYIL
+
+LabControl hech qachon:
+
+**"Kim so‘rasa, hamma ma’lumotni beradigan chatbot"**
+
+bo‘lmasligi kerak.
+
+U:
+
+**"Foydalanuvchining vakolati + loyiha + hujjat darajasi + permission asosida ma’lumot beradigan enterprise AI assistant"**
+
+bo‘lishi kerak.
+
+Barcha AI retrieval va tool execution oldidan authorization tekshirilsin.

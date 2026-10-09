@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Local secrets/configuration and mutable runtime data.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+data/production.database.json
+data/database.json
+data/sessions.json
+data/uploads/
+data/credentials.json
+
+# Next.js build output, including isolated local QA builds.
+.next/
+.next-*/
+out/
+build/
+dist/
+
+# Logs and runtime caches
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+xodim-login-parollar.txt
+
+# System files
+.DS_Store
+Thumbs.db
+
+tsconfig.tsbuildinfo

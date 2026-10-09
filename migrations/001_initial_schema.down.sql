@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS system_settings;
+DROP TABLE IF EXISTS team_messages;
+DROP TABLE IF EXISTS chat_messages;
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS knowledge_items;
+DROP TABLE IF EXISTS tasks;
+DROP TABLE IF EXISTS document_chunks;
+DROP TABLE IF EXISTS documents;
+DROP TABLE IF EXISTS project_members;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS import_batches;
