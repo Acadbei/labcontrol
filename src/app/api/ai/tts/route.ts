@@ -32,7 +32,8 @@ function allowed(userId: string): boolean {
 function generateSpeechBuffer(text: string, voice: string): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(process.cwd(), 'scripts', 'edge-tts-stream.py');
-    const py = spawn('python', [scriptPath, voice], {
+    const pythonBin = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+    const py = spawn(pythonBin, [scriptPath, voice], {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
@@ -64,15 +65,20 @@ function generateSpeechBuffer(text: string, voice: string): Promise<Buffer> {
       resolve(Buffer.concat(chunks));
     });
 
-    // Strip markdown formatting and citations before sending to TTS,
-    // and convert Cyrillic to Latin so uz-UZ models read both flawlessly
-    const cleanText = cyrillicToLatin(
-      text
-        .replace(/\[S\d+\]/g, '')
-        .replace(/[*#_`]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-    );
+    // Strip code blocks, markdown formatting, citations and raw URLs before sending to TTS
+    let cleaned = text
+      .replace(/```[\s\S]*?```/g, '') // remove code blocks
+      .replace(/`([^`]+)`/g, '$1') // inline code
+      .replace(/\[S\d+\]/g, '') // citations like [S1]
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // markdown links
+      .replace(/https?:\/\/\S+/g, '') // raw urls
+      .replace(/[*#_~>|]/g, '') // markdown formatting
+      .replace(/^\s*[-+*]\s+/gm, '') // list bullets
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Convert Cyrillic to Latin so uz-UZ neural model reads smoothly
+    const cleanText = cyrillicToLatin(cleaned);
 
     py.stdin.write(Buffer.from(cleanText, 'utf-8'));
     py.stdin.end();

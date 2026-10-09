@@ -58,7 +58,15 @@ export class PcmAudioStreamPlayer {
     } catch (error) {
       if (this.stopped) return;
       if (fallbackText && typeof window !== 'undefined' && window.speechSynthesis) {
-        await playBrowserSpeech(fallbackText);
+        // Faqat brauzerda haqiqiy o'zbek tili ovozi bo'lsa fallback qilinadi.
+        // Aks holda ingliz/rus ovozi bilan buzib o'qishining oldi olinadi.
+        const voices = window.speechSynthesis.getVoices();
+        const hasUzVoice = voices.some(v => v.lang.toLowerCase().includes('uz') || v.name.toLowerCase().includes('uzbek'));
+        if (hasUzVoice) {
+          await playBrowserSpeech(fallbackText);
+        } else {
+          throw error;
+        }
       } else {
         throw error;
       }
