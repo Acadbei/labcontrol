@@ -311,6 +311,10 @@ export class OpenRouterProvider implements AIProvider {
 }
 
 export function getAIProvider(settings: SystemSettings): AIProvider {
+  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
+  if (openRouterKey) {
+    return new OpenRouterProvider(openRouterKey, process.env.LABCONTROL_OPENROUTER_MODEL || 'openrouter/free');
+  }
   if (settings.aiProvider === 'ollama') {
     return new OllamaProvider(process.env.OLLAMA_URL || settings.ollamaUrl, settings.modelName);
   }

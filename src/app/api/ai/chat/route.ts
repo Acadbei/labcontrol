@@ -135,13 +135,10 @@ export async function POST(request: Request) {
     const rawPrompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
     if (!rawPrompt || rawPrompt.length > 4000) return NextResponse.json({ error: 'So‘rov 1–4000 belgi bo‘lishi kerak' }, { status: 400 });
 
-    if (process.env.OPENROUTER_API_KEY !== undefined) {
+    const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
+    if (openRouterApiKey) {
       if (body?.consent !== true) {
         return NextResponse.json({ error: 'OpenRouter’ga yuborish tasdiqlanmadi; savol va ichki manba parchalari yuborilmadi.' }, { status: 403 });
-      }
-      const apiKey = process.env.OPENROUTER_API_KEY.trim();
-      if (!apiKey) {
-        return NextResponse.json({ error: 'OpenRouter API kaliti serverda sozlanmagan. So‘rov yuborilmadi.' }, { status: 503 });
       }
     }
 
