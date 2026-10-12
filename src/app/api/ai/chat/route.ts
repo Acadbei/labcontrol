@@ -358,10 +358,27 @@ export async function POST(request: Request) {
       }
     }
 
+    function ensureConciseContent(raw: string, maxLen = 950): string {
+      if (!raw || raw.length <= maxLen) return raw;
+      const sentences = raw.split(/(?<=[.!?])\s+/);
+      let acc = '';
+      for (const s of sentences) {
+        const candidate = acc ? `${acc} ${s}` : s;
+        if (candidate.length <= maxLen) {
+          acc = candidate;
+        } else {
+          break;
+        }
+      }
+      if (acc.length >= 120) return acc;
+      return raw.slice(0, maxLen - 3).trim() + '...';
+    }
+
+    const finalContent = ensureConciseContent(response.content, 950);
     const userMessage = db.addChatMessage({ role: 'user', content: rawPrompt, senderId: user.id });
     const assistantMessage = db.addChatMessage({
       role: 'assistant',
-      content: response.content,
+      content: finalContent,
       senderId: user.id,
       citations: response.citations,
       actionProposal: actionProposal || undefined
