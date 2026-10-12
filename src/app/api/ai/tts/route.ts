@@ -5,6 +5,8 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
+import { extractSpeechSummary } from '@/lib/tts-client';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -56,6 +58,15 @@ function generateSpeechBuffer(text: string, voice: string): Promise<Buffer> {
 
     const chunks: Buffer[] = [];
     let errOutput = '';
+    let isDone = false;
+
+    // 25 soniyali xavfsizlik taymeri — jarayon osilib qolmasligi uchun
+    const timeout = setTimeout(() => {
+      if (isDone) return;
+      isDone = true;
+      try { py.kill(); } catch {}
+      reject(new Error('Edge-TTS generatsiya qilish vaqti tugadi'));
+    }, 25_000);
 
     py.stdout.on('data', chunk => {
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
@@ -66,10 +77,16 @@ function generateSpeechBuffer(text: string, voice: string): Promise<Buffer> {
     });
 
     py.on('error', err => {
+      if (isDone) return;
+      isDone = true;
+      clearTimeout(timeout);
       reject(err);
     });
 
     py.on('close', code => {
+      if (isDone) return;
+      isDone = true;
+      clearTimeout(timeout);
       if (code !== 0 || chunks.length === 0) {
         reject(new Error(errOutput || `Edge-TTS jarayoni ${code} kodi bilan tugadi`));
         return;
@@ -77,22 +94,10 @@ function generateSpeechBuffer(text: string, voice: string): Promise<Buffer> {
       resolve(Buffer.concat(chunks));
     });
 
-    // Strip code blocks, markdown formatting, citations and raw URLs before sending to TTS
-    let cleaned = text
-      .replace(/```[\s\S]*?```/g, '') // remove code blocks
-      .replace(/`([^`]+)`/g, '$1') // inline code
-      .replace(/\[S\d+\]/g, '') // citations like [S1]
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // markdown links
-      .replace(/https?:\/\/\S+/g, '') // raw urls
-      .replace(/[*#_~>|]/g, '') // markdown formatting
-      .replace(/^\s*[-+*]\s+/gm, '') // list bullets
-      .replace(/\s+/g, ' ')
-      .trim();
+    // Cyrillic to Latin for uz-UZ neural model
+    const cleanLatin = cyrillicToLatin(text);
 
-    // Convert Cyrillic to Latin so uz-UZ neural model reads smoothly
-    const cleanText = cyrillicToLatin(cleaned);
-
-    py.stdin.write(Buffer.from(cleanText, 'utf-8'));
+    py.stdin.write(Buffer.from(cleanLatin, 'utf-8'));
     py.stdin.end();
   });
 }
@@ -112,12 +117,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Tashqi TTS xizmatiga ruxsat berilmadi.' }, { status: 403 });
   }
 
-  if (typeof body?.text !== 'string' || body.text.length > 5000) {
-    return NextResponse.json({ error: 'Ovozga aylantiriladigan matn 5000 belgidan oshmasin' }, { status: 400 });
+  if (typeof body?.text !== 'string' || body.text.trim().length === 0) {
+    return NextResponse.json({ error: 'Ovozga aylantiriladigan matn kiritilmadi' }, { status: 400 });
   }
 
-  const text = body.text.trim();
-  if (!text) {
+  // AI javobining 1000 belgidan oshmaydigan eng muhim qismini ajratib olamiz
+  const speechText = extractSpeechSummary(body.text, 1000);
+  if (!speechText) {
     return NextResponse.json({ error: 'O‘qish uchun matn topilmadi' }, { status: 400 });
   }
 
@@ -128,7 +134,7 @@ export async function POST(request: NextRequest) {
   const voice = resolveVoice(body?.voice);
 
   try {
-    const audioBuffer = await generateSpeechBuffer(text, voice);
+    const audioBuffer = await generateSpeechBuffer(speechText, voice);
     return new Response(new Uint8Array(audioBuffer), {
       status: 200,
       headers: {

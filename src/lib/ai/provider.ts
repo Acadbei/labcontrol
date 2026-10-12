@@ -160,7 +160,7 @@ export class OllamaProvider implements AIProvider {
         'Foydalangan har bir fakt yoki ro‘yxat bandi yonida unga mos [S1] kabi manba belgisini qo‘y.',
         'Hujjat manbasida verified=false bo‘lsa, uni tasdiqlanmagan deb ochiq ayt.',
         `Agar manbalar savolga umuman javob bermasa, faqat ${INSUFFICIENT_SOURCE_TOKEN} deb yoz.`,
-        'Javobni o‘zbek tilida, aniq, lo‘nda, qisqa va tushunarli bayon qil. Keraksiz so‘zlarsiz to‘g‘ridan-to‘g‘ri javob ber.'
+        'Javobni o‘zbek tilida, aniq, lo‘nda, qisqa va tushunarli bayon qil. Eng muhim asosiy xulosa va natijani javob boshida lo‘nda keltir, shunda ovozli yordamchi uni ravon o‘qib bera oladi. Keraksiz so‘zlarsiz to‘g‘ridan-to‘g‘ri javob ber.'
       ].join(' ');
 
       const response = await fetch(new URL('/api/chat', base), {
@@ -247,7 +247,8 @@ export class OpenRouterProvider implements AIProvider {
       'Manbadan olingan har bir muhim fakt oxirida [S1] kabi to‘g‘ri manba belgisini qo‘y. Ichki savolga manba yetarli bo‘lmasa, boshqa matn qo‘shmay faqat [[INSUFFICIENT_SOURCE]] deb javob ber.',
       'Xodimning imkoniyati yoki mas’uliyatini faqat ko‘rsatilgan lavozim, loyiha jamoasi va vazifa biriktiruvidan kelib chiqib ayt; vazifa biriktirilmagan bo‘lsa, buni aniq ko‘rsat.',
       'Loyiha holati va “bu yerda nima bo‘ldi” savollarida tegishli vazifa izohlari hamda faoliyat yozuvlarining sanasiga tayan.',
-      'Umumiy bilim talab qiladigan va LabControl ichki ma’lumotiga bog‘liq bo‘lmagan savolga umumiy javob berishing mumkin; bunday javobni ichki manba dalili deb ko‘rsatma.'
+      'Umumiy bilim talab qiladigan va LabControl ichki ma’lumotiga bog‘liq bo‘lmagan savolga umumiy javob berishing mumkin; bunday javobni ichki manba dalili deb ko‘rsatma.',
+      'Javobni o‘zbek tilida, aniq, lo‘nda va tushunarli bayon qil. Eng muhim asosiy xulosa va natijani javob boshida lo‘nda keltir, shunda ovozli yordamchi uni lo‘nda o‘qib bera oladi.'
     ].join(' ');
 
     const recentHistory = history

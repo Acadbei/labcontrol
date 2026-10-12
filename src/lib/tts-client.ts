@@ -1,5 +1,77 @@
 import { cyrillicToLatin } from './transliterate';
 
+/**
+ * Matnning eng muhim qismini (1000 belgidan oshmaydigan) nutq uchun tayyorlaydi.
+ * Markdown, havolalar, manbalar, kodlar, emojilarni tozalaydi va
+ * jumlalar chegarasi bo'yicha tabiiy qisqartiradi.
+ */
+export function extractSpeechSummary(rawText: string, maxLen: number = 1000): string {
+  if (!rawText || typeof rawText !== 'string') return '';
+
+  const text = rawText
+    // Kod bloklari va jadvallarni olib tashlash
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\|[^\n]+\|/g, ' ')
+    // Manba havolalari va maxsus tokenlar: [S1], [K1], [[INSUFFICIENT_SOURCE]]
+    .replace(/\[(?:S|K|Doc|Manba)\d+[^\]]*\]/gi, '')
+    .replace(/\[\[.*?\]\]/g, '')
+    // Markdown havolalari: [matn](url) -> matn
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Xom URL'lar
+    .replace(/https?:\/\/\S+/g, '')
+    // Tugma bosish haqidagi texnik ko'rsatmalarni o'qimaslik
+    .replace(/Vazifani tizimga kiritish uchun quyidagi[^\n.]*/gi, '')
+    // Emojilar va piktogrammalarni tozalash
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+    // Markdown belgilari (*, #, _, ~, >, `)
+    .replace(/[*#_~>`]/g, ' ')
+    // Ro'yxat markerlari (-, •, 1.)
+    .replace(/^\s*[-•+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    // Probellarni va qatorlarni tekislash
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n+/g, '. ')
+    .replace(/\s*\.\s*/g, '. ')
+    .replace(/\.+/g, '.')
+    .trim();
+
+  if (!text) return '';
+
+  if (text.length <= maxLen) {
+    return text;
+  }
+
+  // Jumlalar bo'yicha eng muhim qismini 1000 belgidan oshmaydigan qilib yig'ish
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const acc: string[] = [];
+  let currLen = 0;
+
+  for (const s of sentences) {
+    const addLen = s.length + (acc.length > 0 ? 1 : 0);
+    if (currLen + addLen <= maxLen) {
+      acc.push(s);
+      currLen += addLen;
+    } else {
+      break;
+    }
+  }
+
+  if (acc.length > 0) {
+    return acc.join(' ');
+  }
+
+  // Agar birinchi jumlaning o'zi maxLen dan uzun bo'lsa, so'z chegarasidan qirqamiz
+  const cut = text.slice(0, maxLen - 4);
+  const lastSpace = cut.lastIndexOf(' ');
+  const safeText = lastSpace > 0 ? cut.slice(0, lastSpace) : cut;
+  return `${safeText.trim()}.`;
+}
+
 export class PcmAudioStreamPlayer {
   private readonly abortController = new AbortController();
   private currentAudio: HTMLAudioElement | null = null;
@@ -81,14 +153,9 @@ export function playBrowserSpeech(text: string): Promise<void> {
     }
     window.speechSynthesis.cancel();
 
-    // Doim o'zbek tiliga mos transliteratsiya va tozalash
-    const cleanText = cyrillicToLatin(
-      text
-        .replace(/\[S\d+\]/g, '')
-        .replace(/[*#_`]/g, '')
-        .trim()
-        .slice(0, 1500)
-    );
+    // 1000 belgilik eng muhim qismini olish va lotin alifbosiga o'tkazish
+    const speechSummary = extractSpeechSummary(text, 1000);
+    const cleanText = cyrillicToLatin(speechSummary);
 
     if (!cleanText) {
       resolve();

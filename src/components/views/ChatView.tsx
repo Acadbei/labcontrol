@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, Citation, Project } from '@/types';
 import { MarkdownContent } from '@/components/common/MarkdownContent';
-import { PcmAudioStreamPlayer } from '@/lib/tts-client';
+import { PcmAudioStreamPlayer, extractSpeechSummary } from '@/lib/tts-client';
 
 interface ChatSession {
   id: string;
@@ -147,7 +147,7 @@ export function ChatView() {
     setSpeakingMsgId(null);
   };
 
-  // Edge-TTS with fallback to browser SpeechSynthesis
+  // Edge-TTS with fallback to browser SpeechSynthesis (eng muhim qismi, 1000 belgidan oshmaydi)
   const speakText = async (text: string, msgId: string) => {
     if (speakingMsgId === msgId) {
       audioPlayerRef.current?.stop();
@@ -157,20 +157,28 @@ export function ChatView() {
     }
 
     audioPlayerRef.current?.stop();
+    const speechSummary = extractSpeechSummary(text, 1000);
+    if (!speechSummary) {
+      setSpeakingMsgId(null);
+      return;
+    }
+
     const player = new PcmAudioStreamPlayer();
     audioPlayerRef.current = player;
     setSpeakingMsgId(msgId);
+    setVoiceNotice('');
+
     try {
       const res = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text,
+          text: speechSummary,
           voice: selectedVoiceModel === 'Puck' ? 'uz-UZ-SardorNeural' : 'uz-UZ-MadinaNeural'
         }),
         signal: player.signal
       });
-      await player.play(res, text);
+      await player.play(res, speechSummary);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
         setVoiceNotice(error instanceof Error ? error.message : 'TTS xizmati javob bermadi.');

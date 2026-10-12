@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, Citation } from '@/types';
 import { MarkdownContent } from '@/components/common/MarkdownContent';
-import { PcmAudioStreamPlayer } from '@/lib/tts-client';
+import { PcmAudioStreamPlayer, extractSpeechSummary } from '@/lib/tts-client';
 
 export function FloatingAIChat() {
   const { activeTab, setActiveTab, setSelectedDetailItem, triggerDataRefresh, currentUser } = useApp();
@@ -57,7 +57,7 @@ export function FloatingAIChat() {
     }
   }, [messages, isLoading, isOpen]);
 
-  // Edge-TTS with browser speech fallback
+  // Edge-TTS with browser speech fallback (eng muhim qismi, 1000 belgidan oshmaydi)
   const speakText = async (text: string, msgId: string) => {
     if (speakingMsgId === msgId) {
       audioPlayerRef.current?.stop();
@@ -68,8 +68,14 @@ export function FloatingAIChat() {
 
     audioPlayerRef.current?.stop();
     audioPlayerRef.current = null;
-    setSpeakingMsgId(msgId);
 
+    const speechSummary = extractSpeechSummary(text, 1000);
+    if (!speechSummary) {
+      setSpeakingMsgId(null);
+      return;
+    }
+
+    setSpeakingMsgId(msgId);
     const player = new PcmAudioStreamPlayer();
     audioPlayerRef.current = player;
     try {
@@ -77,13 +83,13 @@ export function FloatingAIChat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text,
+          text: speechSummary,
           voice: 'uz-UZ-MadinaNeural'
         }),
         signal: player.signal
       });
 
-      await player.play(res, text);
+      await player.play(res, speechSummary);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
         alert(error instanceof Error ? error.message : 'TTS xizmati javob bermadi.');
