@@ -35,17 +35,36 @@ export async function POST(request: Request) {
     const body = await request.json();
     const title = typeof body?.title === 'string' ? body.title.trim() : '';
     if (!title || title.length > 240) return NextResponse.json({ error: 'Vazifa sarlavhasi 1–240 belgi bo‘lishi kerak' }, { status: 400 });
-    if (typeof body.projectId !== 'string' || !body.projectId) return NextResponse.json({ error: 'Loyiha tanlang' }, { status: 400 });
-    const project = db.getProject(body.projectId);
-    if (!project) return NextResponse.json({ error: 'Loyiha topilmadi' }, { status: 400 });
+    
+    let projectId = typeof body.projectId === 'string' ? body.projectId.trim() : '';
+    let project = projectId ? db.getProject(projectId) : undefined;
+    if (!project) {
+      const allProjects = db.getProjects().filter(p => canAccessProject(user, p));
+      if (allProjects.length > 0) {
+        project = allProjects[0];
+        projectId = project.id;
+      }
+    }
+    if (!project) return NextResponse.json({ error: 'Loyiha topilmadi yoki tanlanmagan' }, { status: 400 });
     if (!canAccessProject(user, project)) return NextResponse.json({ error: 'Loyihaga kirish taqiqlangan' }, { status: 403 });
+
     const assigneeId = typeof body.assigneeId === 'string' && body.assigneeId ? body.assigneeId : user.id;
     if (assigneeId !== user.id && !user.permissions.includes('tasks.assign')) return NextResponse.json({ error: 'Vazifa biriktirish huquqi yo‘q' }, { status: 403 });
     const assignee = db.getUser(assigneeId);
-    if (!assignee || !project.teamIds.includes(assigneeId)) return NextResponse.json({ error: 'Mas’ul shaxs loyiha jamoasida emas yoki topilmadi' }, { status: 400 });
+    if (!assignee) return NextResponse.json({ error: 'Mas’ul xodim topilmadi' }, { status: 400 });
+    if (!project.teamIds.includes(assigneeId)) {
+      db.updateProject(project.id, { teamIds: [...project.teamIds, assigneeId] });
+      project = db.getProject(project.id) || project;
+    }
+
     const priority = PRIORITIES.includes(body.priority) ? body.priority : 'Medium';
-    const deadline = typeof body.deadline === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.deadline) ? body.deadline : '';
-    if (!deadline || Number.isNaN(Date.parse(`${deadline}T00:00:00Z`))) return NextResponse.json({ error: 'Muddat YYYY-MM-DD formatida bo‘lishi kerak' }, { status: 400 });
+    let deadline = typeof body.deadline === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.deadline) ? body.deadline : '';
+    if (!deadline || Number.isNaN(Date.parse(`${deadline}T00:00:00Z`))) {
+      const d = new Date();
+      d.setDate(d.getDate() + 7);
+      deadline = d.toISOString().slice(0, 10);
+    }
+
     const task = db.createTask({
       title, description: typeof body.description === 'string' ? body.description.trim().slice(0, 10000) : '',
       projectId: project.id, projectName: project.name, assigneeId, assigneeName: assignee.name,
@@ -101,7 +120,10 @@ export async function PUT(request: Request) {
       if (!user.permissions.includes('tasks.assign')) return NextResponse.json({ error: 'Vazifa biriktirish huquqi yo‘q' }, { status: 403 });
       const assignee = typeof body.assigneeId === 'string' ? db.getUser(body.assigneeId) : undefined;
       const project = db.getProject(existing.projectId);
-      if (!assignee || !project?.teamIds.includes(assignee.id)) return NextResponse.json({ error: 'Mas’ul shaxs loyiha jamoasida emas yoki topilmadi' }, { status: 400 });
+      if (!assignee) return NextResponse.json({ error: 'Mas’ul shaxs topilmadi' }, { status: 400 });
+      if (project && !project.teamIds.includes(assignee.id)) {
+        db.updateProject(project.id, { teamIds: [...project.teamIds, assignee.id] });
+      }
       changes.assigneeId = assignee.id; changes.assigneeName = assignee.name;
     }
     if (body.tags !== undefined) {

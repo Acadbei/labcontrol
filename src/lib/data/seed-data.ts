@@ -498,6 +498,78 @@ export const SEED_KNOWLEDGE: KnowledgeItem[] = [
     ],
     tags: ['IP68', 'SolidWorks', 'CAD', 'O-Ring'],
     updatedAt: '2026-09-25T11:30:00Z'
+  },
+  {
+    id: 'kno-4',
+    title: 'Elektron brasletlar: UBQ-16 (oyoqqa) va UBQ-04 (qo‘lga) qurilmalari hamda masofaviy nazorat tizimi',
+    category: 'Hardware',
+    content: 'O‘zbekiston Respublikasi Vazirlar Mahkamasining 2024-yil 5-dekabrdagi 813-son qaroriga muvofiq, uy qamog‘i ehtiyot chorasi va ozodlikni cheklash jazosi tayinlangan shaxslarni elektron brasletlar orqali real vaqt rejimida masofadan nazorat qilish tartibi belgilangan.\n\nUBQ-16 oyoqqa taqiladigan (45 dona) va UBQ-04 qo‘lga taqiladigan (30 dona) qurilmalari ishlab chiqilgan. Sinovlarda aniqlangan quvvatlash kontaktlari va tasma o‘lchami moslashtirilib, zaryad muddati 72 soatga yetkazildi.',
+    projectId: 'proj-1',
+    projectName: 'Smart Water Meter',
+    technicalParams: [
+      { key: 'Himoya darajasi', value: 'IP68 germetik' },
+      { key: 'Aloqa moduli', value: '4G LTE Cat-1' },
+      { key: 'Batareya muddati', value: '72 soat' }
+    ],
+    tags: ['Elektron braslet', 'UBQ-16', 'UBQ-04', 'Probatsiya', 'Hardware'],
+    updatedAt: '2026-10-08T06:00:00Z'
+  },
+  {
+    id: 'kno-5',
+    title: '«Aqlli ko‘zoynak» tizimi: Face Recognition va ANPR texnologiyalari',
+    category: 'Research',
+    content: '«Aqlli ko‘zoynak» mobil taqiladigan tizimi jamoat xavfsizligini ta’minlash, qidiruvdagi shaxslar (Face Recognition) va avtotransport vositalari davlat raqamlarini (ANPR) real vaqt rejimida skanerlash uchun mo‘ljallangan. 1.2 TOPS NPU orqali lokal neyrotarmoq tahlili 400 ms dan kam vaqt oladi.',
+    projectId: 'proj-1',
+    projectName: 'Smart Water Meter',
+    technicalParams: [
+      { key: 'Kamera moduli', value: '1080p 30fps 110°' },
+      { key: 'NPU unumdorligi', value: '1.2 TOPS' },
+      { key: 'Aniqlash vaqti', value: '< 400 ms' }
+    ],
+    tags: ['Aqlli ko‘zoynak', 'Face Recognition', 'ANPR', 'AI', 'Neyrotarmoq'],
+    updatedAt: '2026-10-08T06:10:00Z'
+  },
+  {
+    id: 'kno-6',
+    title: '«Xavfsiz sayohat» telemetriya va transport monitoringi tizimi',
+    category: 'Specification',
+    content: '«Xavfsiz sayohat» qurilmasi transport vositalari harakatini masofadan nazorat qilish, CAN-bus (J1939/OBD-II) interfeysi orqali avtomobil telemetriyasini o‘qish, SOS favqulodda chaqiruv va to‘qnashuvlarni (Crash Detection) avtomatik aniqlash uchun mo‘ljallangan.',
+    projectId: 'proj-1',
+    projectName: 'Smart Water Meter',
+    technicalParams: [
+      { key: 'CAN interfeysi', value: 'CAN 2.0B / ISO 15765-4' },
+      { key: 'Aloqa protokoli', value: 'MQTT over TLS' }
+    ],
+    tags: ['Xavfsiz sayohat', 'Telemetriya', 'CAN-bus', 'GPS', 'Transport'],
+    updatedAt: '2026-10-08T06:15:00Z'
+  },
+  {
+    id: 'kno-7',
+    title: 'Krim Assistent: Kriminologiya instituti sun’iy intellekt tahliliy platformasi',
+    category: 'Software',
+    content: '«Krim Assistent» platformasi institut xodimlarining ilmiy, tahliliy va tashkiliy faoliyatiga ko‘maklashuvchi korporativ AI tizimidir. Ichki me’yoriy hujjatlar bo‘yicha RAG qidiruv, rasmiy xatlar loyihalarini shakllantirish, 5 bosqichli RBAC roli va to‘liq audit jurnali bilan ta’minlangan.',
+    projectId: 'proj-1',
+    projectName: 'Smart Water Meter',
+    technicalParams: [
+      { key: 'Qidiruv usuli', value: 'Hybrid Vector + BM25' },
+      { key: 'Formatlar', value: 'DOCX, PDF, PPTX' }
+    ],
+    tags: ['Krim Assistent', 'RAG', 'AI', 'Hujjatlar', 'RBAC'],
+    updatedAt: '2026-10-08T06:20:00Z'
+  },
+  {
+    id: 'kno-8',
+    title: 'Ishlab chiqarish va prototiplashda texnika xavfsizligi hamda sinov protokollari (SOP)',
+    category: 'Standard',
+    content: 'Laboratoriyada elektr xavfsizligi (36V+ zanjirlar, ESD antistatik bilaguzuklar), litiy akkumulyatorlar (Li-Ion/LiPo BMS himoyasi), CNC frezalash va 3D bosib chiqarish xavfsizlik qoidalari hamda sinov bayonnomalarini (Test Report) rasmiylashtirish tartibi.',
+    projectId: 'proj-1',
+    projectName: 'Smart Water Meter',
+    technicalParams: [
+      { key: 'ESD standarti', value: 'ANSI/ESD S20.20' },
+      { key: 'Batareya xavfsizligi', value: 'IEC 62133' }
+    ],
+    tags: ['Standart', 'Texnika xavfsizligi', 'SOP', 'ESD', 'Prototip'],
+    updatedAt: '2026-10-08T06:25:00Z'
   }
 ];
 

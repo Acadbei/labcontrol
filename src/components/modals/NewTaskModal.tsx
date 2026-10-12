@@ -7,18 +7,27 @@ import { Priority, TaskStatus, Project } from '@/types';
 
 export function NewTaskModal() {
   const { isNewTaskModalOpen, setIsNewTaskModalOpen, allUsers, setActiveTab, triggerDataRefresh, currentUser } = useAppContext();
+  const defaultDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().slice(0, 10);
+  };
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
   const [projectId, setProjectId] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [priority, setPriority] = useState<Priority>('High');
-  const [deadline, setDeadline] = useState('');
+  const [deadline, setDeadline] = useState(defaultDate());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isNewTaskModalOpen) {
+      setDeadline(prev => prev || defaultDate());
+      if (currentUser?.id && !assigneeId) {
+        setAssigneeId(currentUser.id);
+      }
       fetch('/api/projects')
         .then(r => r.json())
         .then((data: Project[]) => {
@@ -29,7 +38,7 @@ export function NewTaskModal() {
         })
         .catch(console.error);
     }
-  }, [isNewTaskModalOpen]);
+  }, [isNewTaskModalOpen, currentUser?.id]);
 
   if (!isNewTaskModalOpen || !currentUser?.permissions.includes('tasks.create')) return null;
 
@@ -40,16 +49,18 @@ export function NewTaskModal() {
     setIsSubmitting(true);
     setError(null);
     try {
+      const targetProjectId = projectId || (projects[0]?.id ?? '');
+      const targetAssigneeId = assigneeId || (currentUser?.id ?? allUsers[0]?.id ?? '');
       const res = await fetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
-          description,
-          assigneeId: assigneeId || allUsers[0]?.id,
-          projectId: projectId || (projects[0]?.id ?? 'proj-1'),
+          title: title.trim(),
+          description: description.trim(),
+          assigneeId: targetAssigneeId,
+          projectId: targetProjectId,
           priority,
-          deadline,
+          deadline: deadline || defaultDate(),
           status: 'TODO'
         })
       });

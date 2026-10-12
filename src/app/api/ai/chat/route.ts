@@ -7,6 +7,7 @@ import { isAuthResponse, requirePermission } from '@/lib/auth';
 import { RetrievedSource } from '@/lib/ai/rag';
 import { findMatchingTeamMembers } from '@/lib/data/team-capabilities';
 import { isCyrillic } from '@/lib/transliterate';
+import { AIActionProposal } from '@/types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -120,6 +121,112 @@ function makeWorkspaceSources(prompt: string, user: { id: string; role: string; 
     .slice(0, 10);
 }
 
+function detectTaskProposal(prompt: string, user: { id: string; name: string; role: string; permissions: string[] }, requestedProjectId?: string): {
+  isTaskIntent: boolean;
+  proposal?: AIActionProposal;
+} {
+  const TASK_INTENT_PATTERN = /\b(vazifa\s*(yarat|qo['‘`]?sh|ber|biriktir|tayinla|och)|topshiriq\s*(yarat|ber|biriktir|qo['‘`]?sh|tayinla)|yangi\s*vazifa|task\s*(yarat|qo['‘`]?sh|ber|create)|create\s*task)\b/i;
+  if (!TASK_INTENT_PATTERN.test(prompt)) {
+    return { isTaskIntent: false };
+  }
+
+  const accessibleProjects = db.getProjects().filter(p => canAccessProject(user as any, p));
+  let project = requestedProjectId ? db.getProject(requestedProjectId) : undefined;
+  if (!project) {
+    for (const p of accessibleProjects) {
+      if (prompt.toLocaleLowerCase('uz').includes(p.name.toLocaleLowerCase('uz')) || prompt.includes(p.code)) {
+        project = p;
+        break;
+      }
+    }
+  }
+  if (!project && accessibleProjects.length > 0) {
+    project = accessibleProjects[0];
+  }
+
+  const allUsers = db.getUsers();
+  let assignee: { id: string; name: string } | undefined;
+  const promptLower = prompt.toLocaleLowerCase('uz');
+
+  for (const u of allUsers) {
+    const parts = u.name.toLocaleLowerCase('uz').split(/\s+/);
+    for (const part of parts) {
+      if (part.length >= 4 && promptLower.includes(part)) {
+        assignee = { id: u.id, name: u.name };
+        break;
+      }
+    }
+    if (assignee) break;
+  }
+
+  if (!assignee) {
+    assignee = { id: user.id, name: user.name };
+  }
+
+  let title = '';
+  const quoteMatch = prompt.match(/["«“]([^"»”]+)["»”]/);
+  if (quoteMatch && quoteMatch[1].trim().length > 2) {
+    title = quoteMatch[1].trim();
+  } else {
+    const colonMatch = prompt.match(/(?:vazifa|topshiriq|task)(?:\s*nomi|\s*sarlavhasi)?\s*[:—–-]\s*([^.,;\n]+)/i);
+    if (colonMatch && colonMatch[1].trim().length > 2) {
+      title = colonMatch[1].trim();
+    } else {
+      const cleaned = prompt
+        .replace(TASK_INTENT_PATTERN, '')
+        .replace(/\b(uchun|ga|ni|loyihasiga|loyihasi|bo‘yicha|iltimos|kerak)\b/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      title = cleaned.length > 3 ? cleaned.slice(0, 120) : 'Yangi laboratoriya vazifasi';
+    }
+  }
+
+  let priority = 'Medium';
+  if (/o‘?ta muhim|critical|shoshilinch/i.test(prompt)) priority = 'Critical';
+  else if (/yuqori|high|muhim/i.test(prompt)) priority = 'High';
+  else if (/past|low/i.test(prompt)) priority = 'Low';
+
+  let deadline = '';
+  const dateMatch = prompt.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+  if (dateMatch) {
+    deadline = dateMatch[1];
+  } else if (/ertaga/i.test(prompt)) {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    deadline = d.toISOString().slice(0, 10);
+  } else if (/(\d+)\s*kunda/i.test(prompt)) {
+    const days = parseInt(prompt.match(/(\d+)\s*kunda/i)![1], 10);
+    const d = new Date();
+    d.setDate(d.getDate() + (days || 7));
+    deadline = d.toISOString().slice(0, 10);
+  } else {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    deadline = d.toISOString().slice(0, 10);
+  }
+
+  if (!project) {
+    return { isTaskIntent: true };
+  }
+
+  const proposal: AIActionProposal = {
+    actionType: 'create_task',
+    label: `Vazifa yaratish: "${title}"`,
+    parameters: {
+      title,
+      description: prompt.slice(0, 500),
+      projectId: project.id,
+      projectName: project.name,
+      assigneeId: assignee.id,
+      assigneeName: assignee.name,
+      priority,
+      deadline
+    }
+  };
+
+  return { isTaskIntent: true, proposal };
+}
+
 export async function GET(request: Request) {
   const user = await requirePermission(request, 'ai.chat');
   if (isAuthResponse(user)) return user;
@@ -135,10 +242,13 @@ export async function POST(request: Request) {
     const rawPrompt = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
     if (!rawPrompt || rawPrompt.length > 4000) return NextResponse.json({ error: 'So‘rov 1–4000 belgi bo‘lishi kerak' }, { status: 400 });
 
-    const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
-    if (openRouterApiKey) {
+    if (process.env.OPENROUTER_API_KEY !== undefined) {
       if (body?.consent !== true) {
         return NextResponse.json({ error: 'OpenRouter’ga yuborish tasdiqlanmadi; savol va ichki manba parchalari yuborilmadi.' }, { status: 403 });
+      }
+      const apiKey = process.env.OPENROUTER_API_KEY.trim();
+      if (!apiKey) {
+        return NextResponse.json({ error: 'OpenRouter API kaliti serverda sozlanmagan. So‘rov yuborilmadi.' }, { status: 503 });
       }
     }
 
@@ -188,13 +298,31 @@ export async function POST(request: Request) {
       response = await fallbackProvider.chat(effectivePrompt, chatHistory, sources);
     }
 
+    const taskIntent = detectTaskProposal(rawPrompt, user as any, projectId);
+    const actionProposal = taskIntent.proposal;
+    if (actionProposal) {
+      const p = actionProposal.parameters;
+      const proposalText = `\n\n📌 **Vazifa taklifi shakllantirildi:**\n• **Nomi:** ${p.title}\n• **Mas’ul:** ${p.assigneeName}\n• **Loyiha:** ${p.projectName}\n• **Ustuvorlik:** ${p.priority}\n• **Muddat:** ${p.deadline}\n\n*Vazifani tizimga kiritish uchun quyidagi «Amalni tasdiqlash va vazifa yaratish» tugmasini bosing.*`;
+      if (!response.content || response.content === NOT_FOUND || response.content.includes(NOT_FOUND)) {
+        response.content = `Topshiriq bo‘yicha vazifa parametrlari muvaffaqiyatli tayyorlandi.${proposalText}`;
+      } else {
+        response.content += proposalText;
+      }
+    }
+
     const userMessage = db.addChatMessage({ role: 'user', content: rawPrompt, senderId: user.id });
-    const assistantMessage = db.addChatMessage({ role: 'assistant', content: response.content, senderId: user.id, citations: response.citations });
+    const assistantMessage = db.addChatMessage({
+      role: 'assistant',
+      content: response.content,
+      senderId: user.id,
+      citations: response.citations,
+      actionProposal: actionProposal || undefined
+    });
     db.addAuditLog({
       userId: user.id,
       userName: user.name,
-      action: 'AI YORDAMCHI JAVOBI',
-      object: 'Yordamchi',
+      action: actionProposal ? 'AI VAZIFA TAKLIF QILINDI' : 'AI YORDAMCHI JAVOBI',
+      object: actionProposal ? actionProposal.parameters.title : 'Yordamchi',
       details: `${response.providerUsed} orqali javob berildi (${response.citations.length} ta manba)`,
       ip: 'unknown',
       status: 'SUCCESS'

@@ -17,7 +17,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   SUPER_ADMIN: [
     'users.view', 'users.create', 'projects.view',
     'documents.view', 'documents.upload', 'documents.analyze',
-    'tasks.view',
+    'tasks.view', 'tasks.create', 'tasks.assign', 'tasks.edit',
     'knowledge.view', 'knowledge.create', 'knowledge.edit', 'knowledge.delete',
     'team.view', 'team.chat', 'backup.export', 'chat.delete',
     'ai.chat', 'ai.document_analysis', 'ai.project_analysis',

@@ -15,16 +15,31 @@ export async function POST(request: Request) {
     if (body.confirmed !== true) return NextResponse.json({ error: 'Amal foydalanuvchi tomonidan tasdiqlanishi kerak' }, { status: 400 });
     const parameters = body.parameters && typeof body.parameters === 'object' ? body.parameters : {};
     const title = typeof parameters.title === 'string' ? parameters.title.trim() : '';
-    const projectId = typeof parameters.projectId === 'string' ? parameters.projectId : '';
-    const project = db.getProject(projectId);
+    let projectId = typeof parameters.projectId === 'string' ? parameters.projectId : '';
+    let project = projectId ? db.getProject(projectId) : undefined;
+    if (!project) {
+      const allProjects = db.getProjects().filter(p => canAccessProject(user, p));
+      if (allProjects.length > 0) {
+        project = allProjects[0];
+        projectId = project.id;
+      }
+    }
     if (!title || title.length > 240 || !project) return NextResponse.json({ error: 'Vazifa nomi yoki loyiha noto‘g‘ri' }, { status: 400 });
     if (!canAccessProject(user, project)) return NextResponse.json({ error: 'Loyihaga kirish taqiqlangan' }, { status: 403 });
     const assigneeId = typeof parameters.assigneeId === 'string' ? parameters.assigneeId : '';
     if (assigneeId && assigneeId !== user.id && !user.permissions.includes('tasks.assign')) return NextResponse.json({ error: 'Boshqa xodimga biriktirish huquqi yo‘q' }, { status: 403 });
     const assignee = db.getUser(assigneeId || user.id);
-    if (!assignee || !project.teamIds.includes(assignee.id)) return NextResponse.json({ error: 'Mas’ul shaxs loyiha jamoasida emas yoki topilmadi' }, { status: 400 });
-    const deadline = typeof parameters.deadline === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parameters.deadline) ? parameters.deadline : '';
-    if (!deadline || Number.isNaN(Date.parse(`${deadline}T00:00:00Z`))) return NextResponse.json({ error: 'To‘g‘ri muddat kiriting' }, { status: 400 });
+    if (!assignee) return NextResponse.json({ error: 'Mas’ul shaxs topilmadi' }, { status: 400 });
+    if (!project.teamIds.includes(assignee.id)) {
+      db.updateProject(project.id, { teamIds: [...project.teamIds, assignee.id] });
+      project = db.getProject(project.id) || project;
+    }
+    let deadline = typeof parameters.deadline === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parameters.deadline) ? parameters.deadline : '';
+    if (!deadline || Number.isNaN(Date.parse(`${deadline}T00:00:00Z`))) {
+      const d = new Date();
+      d.setDate(d.getDate() + 7);
+      deadline = d.toISOString().slice(0, 10);
+    }
     const task = db.createTask({
       title, description: typeof parameters.description === 'string' ? parameters.description.slice(0, 10000) : '',
       projectId: project.id, projectName: project.name, assigneeId: assignee.id, assigneeName: assignee.name,

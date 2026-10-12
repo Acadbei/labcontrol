@@ -724,8 +724,18 @@ export function ChatView() {
                           <Shield className="w-3.5 h-3.5" />
                           <span>{msg.actionProposal.label}</span>
                         </div>
-                        <div className="text-[11px] text-slate-800 dark:text-slate-300 font-mono bg-white dark:bg-slate-900/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
-                          {JSON.stringify(msg.actionProposal.parameters, null, 2)}
+                        <div className="text-[11px] text-slate-800 dark:text-slate-200 bg-white/90 dark:bg-slate-900/90 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5 shadow-sm">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-900 dark:text-slate-100">{msg.actionProposal.parameters.title}</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800">
+                              {msg.actionProposal.parameters.priority || 'Medium'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1 text-[11px] text-slate-600 dark:text-slate-400">
+                            <div>📁 <span className="font-medium text-slate-700 dark:text-slate-300">{msg.actionProposal.parameters.projectName || 'Laboratoriya loyihasi'}</span></div>
+                            <div>👤 <span className="font-medium text-slate-700 dark:text-slate-300">{msg.actionProposal.parameters.assigneeName || 'Mas’ul xodim'}</span></div>
+                            <div>📅 <span className="font-medium text-slate-700 dark:text-slate-300">{msg.actionProposal.parameters.deadline || 'Belgilanmagan'}</span></div>
+                          </div>
                         </div>
 
                         {actionStatus[msg.id]?.startsWith('success') ? (

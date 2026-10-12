@@ -203,13 +203,16 @@ export function ProjectsView() {
     e.preventDefault();
     if (!selectedProject || !taskTitle.trim()) return;
     try {
+      const defaultDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       const res = await fetch('/api/tasks', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: taskTitle.trim(), description: taskDesc.trim(),
           projectId: selectedProject.id,
-          assigneeId: taskAssigneeId || (allUsers[0]?.id ?? 'user-1'),
-          priority: taskPriority, deadline: taskDeadline, status: 'TODO'
+          assigneeId: taskAssigneeId || (currentUser?.id ?? allUsers[0]?.id),
+          priority: taskPriority,
+          deadline: taskDeadline || defaultDate,
+          status: 'TODO'
         })
       });
       if (res.ok) {
