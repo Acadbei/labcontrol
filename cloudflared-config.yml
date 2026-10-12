@@ -3,7 +3,7 @@ credentials-file: C:\Users\user\.cloudflared\26db28d5-e5a7-47f0-a4c4-21915b449eb
 
 ingress:
   - hostname: miyya.uz
-    service: http://localhost:3000
+    service: http://127.0.0.1:3000
   - hostname: www.miyya.uz
-    service: http://localhost:3000
+    service: http://127.0.0.1:3000
   - service: http_status:404

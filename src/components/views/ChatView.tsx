@@ -292,6 +292,9 @@ export function ChatView() {
       const pair = [data.userMessage, data.assistantMessage].filter(Boolean) as ChatMessage[];
       setSessions(current => current.map(session => ({ ...session, updatedAt: data.assistantMessage?.timestamp || new Date().toISOString(), messages: [...session.messages.filter(message => message.id !== temporaryMessage.id), ...pair] })));
       triggerDataRefresh();
+      if (data.assistantMessage?.actionProposal?.parameters?.created) {
+        triggerDataRefresh();
+      }
       if (autoVoiceReply && data.assistantMessage?.content) speakText(data.assistantMessage.content, data.assistantMessage.id);
     } catch (error: any) {
       setSessions(current => current.map(session => ({ ...session, messages: session.messages.filter(message => message.id !== temporaryMessage.id) })));
@@ -738,10 +741,10 @@ export function ChatView() {
                           </div>
                         </div>
 
-                        {actionStatus[msg.id]?.startsWith('success') ? (
+                        {msg.actionProposal.parameters?.created || actionStatus[msg.id]?.startsWith('success') ? (
                           <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded border border-emerald-200 dark:border-emerald-800/40">
                             <Check className="w-4 h-4" />
-                            <span>{actionStatus[msg.id].replace('success: ', '')}</span>
+                            <span>Vazifa muvaffaqiyatli belgilandi va tizimga saqlandi</span>
                           </div>
                         ) : actionStatus[msg.id]?.startsWith('error') ? (
                           <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 dark:text-rose-400 p-2 bg-rose-50 dark:bg-rose-950/40 rounded border border-rose-200 dark:border-rose-800/40">

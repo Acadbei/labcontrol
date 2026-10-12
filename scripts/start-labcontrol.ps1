@@ -4,7 +4,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $listener = Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($listener) { exit 0 }
 
-$env:LABCONTROL_NEXT_DIST_DIR = '.next-labcontrol'
+$env:LABCONTROL_NEXT_DIST_DIR = '.next'
 $node = (Get-Command node.exe -ErrorAction Stop).Source
 $nextBin = Join-Path $projectRoot 'node_modules\next\dist\bin\next'
 $logDir = Join-Path $env:LOCALAPPDATA 'LabControl'

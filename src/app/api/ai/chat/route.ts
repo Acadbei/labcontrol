@@ -125,7 +125,7 @@ function detectTaskProposal(prompt: string, user: { id: string; name: string; ro
   isTaskIntent: boolean;
   proposal?: AIActionProposal;
 } {
-  const TASK_INTENT_PATTERN = /\b(vazifa\s*(yarat|qo['‘`]?sh|ber|biriktir|tayinla|och)|topshiriq\s*(yarat|ber|biriktir|qo['‘`]?sh|tayinla)|yangi\s*vazifa|task\s*(yarat|qo['‘`]?sh|ber|create)|create\s*task)\b/i;
+  const TASK_INTENT_PATTERN = /\b(vazifa\s*(belgila\w*|yarat\w*|qo['‘`]?sh\w*|ber\w*|biriktir\w*|tayinla\w*|och\w*|yukla\w*|taqsimla\w*|topshir\w*|qo['‘`]?y\w*)|topshiriq\s*(belgila\w*|yarat\w*|ber\w*|biriktir\w*|qo['‘`]?sh\w*|tayinla\w*|yukla\w*|taqsimla\w*|topshir\w*|qo['‘`]?y\w*|och\w*)|yangi\s*(vazifa|topshiriq)|task\s*(create|assign|add|yarat\w*|ber\w*|qo['‘`]?sh\w*)|create\s*task|assign\s*task|вазифа\s*(белгила\w*|ярат\w*|қўш\w*|бер\w*|бириктир\w*|тайинла\w*|юкла\w*)|топшириқ\s*(белгила\w*|ярат\w*|бер\w*|бириктир\w*|юкла\w*))\b|^(vazifa|topshiriq|task)\s*:\s*/i;
   if (!TASK_INTENT_PATTERN.test(prompt)) {
     return { isTaskIntent: false };
   }
@@ -168,16 +168,22 @@ function detectTaskProposal(prompt: string, user: { id: string; name: string; ro
   if (quoteMatch && quoteMatch[1].trim().length > 2) {
     title = quoteMatch[1].trim();
   } else {
-    const colonMatch = prompt.match(/(?:vazifa|topshiriq|task)(?:\s*nomi|\s*sarlavhasi)?\s*[:—–-]\s*([^.,;\n]+)/i);
+    const colonMatch = prompt.match(/(?:vazifa|topshiriq|task)(?:\s*nomi|\s*sarlavhasi|\s*belgila\w*|\s*yarat\w*|\s*biriktir\w*)?\s*[:—–-]\s*([^.,;\n]+)/i);
     if (colonMatch && colonMatch[1].trim().length > 2) {
       title = colonMatch[1].trim();
     } else {
-      const cleaned = prompt
+      let cleaned = prompt
         .replace(TASK_INTENT_PATTERN, '')
-        .replace(/\b(uchun|ga|ni|loyihasiga|loyihasi|bo‘yicha|iltimos|kerak)\b/gi, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      title = cleaned.length > 3 ? cleaned.slice(0, 120) : 'Yangi laboratoriya vazifasi';
+        .replace(/\b(uchun|ga|ka|qa|ni|loyihasiga|loyihasi|bo‘yicha|iltimos|kerak)\b/gi, ' ');
+      if (assignee) {
+        for (const part of assignee.name.split(/\s+/)) {
+          if (part.length >= 3) {
+            cleaned = cleaned.replace(new RegExp(part, 'gi'), ' ');
+          }
+        }
+      }
+      cleaned = cleaned.replace(/\s+/g, ' ').trim();
+      title = cleaned.length > 3 ? cleaned.slice(0, 120) : 'Laboratoriya vazifasi';
     }
   }
 
@@ -302,11 +308,53 @@ export async function POST(request: Request) {
     const actionProposal = taskIntent.proposal;
     if (actionProposal) {
       const p = actionProposal.parameters;
-      const proposalText = `\n\n📌 **Vazifa taklifi shakllantirildi:**\n• **Nomi:** ${p.title}\n• **Mas’ul:** ${p.assigneeName}\n• **Loyiha:** ${p.projectName}\n• **Ustuvorlik:** ${p.priority}\n• **Muddat:** ${p.deadline}\n\n*Vazifani tizimga kiritish uchun quyidagi «Amalni tasdiqlash va vazifa yaratish» tugmasini bosing.*`;
-      if (!response.content || response.content === NOT_FOUND || response.content.includes(NOT_FOUND)) {
-        response.content = `Topshiriq bo‘yicha vazifa parametrlari muvaffaqiyatli tayyorlandi.${proposalText}`;
+      let createdTask: any = undefined;
+
+      // Agar foydalanuvchida vazifa yaratish huquqi bo'lsa, uni bazaga darhol kiritamiz
+      if (user.permissions.includes('tasks.create')) {
+        let taskProj = db.getProject(p.projectId);
+        if (taskProj) {
+          if (!taskProj.teamIds.includes(p.assigneeId)) {
+            db.updateProject(taskProj.id, { teamIds: [...taskProj.teamIds, p.assigneeId] });
+            taskProj = db.getProject(taskProj.id) || taskProj;
+          }
+          createdTask = db.createTask({
+            title: p.title,
+            description: p.description || '',
+            projectId: taskProj.id,
+            projectName: taskProj.name,
+            assigneeId: p.assigneeId,
+            assigneeName: p.assigneeName,
+            creatorId: user.id,
+            creatorName: user.name,
+            priority: ['Low', 'Medium', 'High', 'Critical'].includes(p.priority) ? p.priority : 'Medium',
+            deadline: p.deadline,
+            status: 'TODO',
+            tags: []
+          });
+          db.addAuditLog({
+            userId: user.id,
+            userName: user.name,
+            action: 'AI ORQALI VAZIFA YARATILDI',
+            object: createdTask.title,
+            details: `Loyiha: ${taskProj.name}, Mas’ul: ${p.assigneeName}`,
+            ip: 'unknown',
+            status: 'SUCCESS'
+          });
+        }
+      }
+
+      if (createdTask) {
+        actionProposal.parameters.taskId = createdTask.id;
+        actionProposal.parameters.created = true;
+        response.content = `✅ **Vazifa muvaffaqiyatli belgilandi va tizimga kiritildi:**\n• **Nomi:** ${createdTask.title}\n• **Mas’ul:** ${p.assigneeName}\n• **Loyiha:** ${p.projectName}\n• **Ustuvorlik:** ${p.priority}\n• **Muddat:** ${p.deadline}\n• **Holat:** Bajarilishi kerak (TODO)\n\n*Vazifalar ro‘yxatiga yangi vazifa darhol qo‘shildi.*`;
       } else {
-        response.content += proposalText;
+        const proposalText = `\n\n📌 **Vazifa taklifi shakllantirildi:**\n• **Nomi:** ${p.title}\n• **Mas’ul:** ${p.assigneeName}\n• **Loyiha:** ${p.projectName}\n• **Ustuvorlik:** ${p.priority}\n• **Muddat:** ${p.deadline}\n\n*Vazifani tizimga kiritish uchun quyidagi «Amalni tasdiqlash va vazifa yaratish» tugmasini bosing.*`;
+        if (!response.content || response.content === NOT_FOUND || response.content.includes(NOT_FOUND)) {
+          response.content = `Topshiriq bo‘yicha vazifa parametrlari muvaffaqiyatli tayyorlandi.${proposalText}`;
+        } else {
+          response.content += proposalText;
+        }
       }
     }
 

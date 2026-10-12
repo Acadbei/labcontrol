@@ -3,6 +3,7 @@ import { isAuthResponse, requirePermission } from '@/lib/auth';
 import { cyrillicToLatin } from '@/lib/transliterate';
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -29,10 +30,21 @@ function allowed(userId: string): boolean {
   return true;
 }
 
+function getPythonBin(): string {
+  if (process.env.PYTHON_BIN) return process.env.PYTHON_BIN;
+  if (process.platform === 'win32') return 'python';
+  for (const p of ['/usr/bin/python3', '/usr/bin/python', '/usr/local/bin/python3']) {
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch {}
+  }
+  return 'python3';
+}
+
 function generateSpeechBuffer(text: string, voice: string): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(process.cwd(), 'scripts', 'edge-tts-stream.py');
-    const pythonBin = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+    const pythonBin = getPythonBin();
     const py = spawn(pythonBin, [scriptPath, voice], {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: {
